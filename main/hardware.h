@@ -11,7 +11,7 @@
 #define LCD_MIRROR_X       (true)
 #define LCD_MIRROR_Y       (false)
 #else
-#define LCD_MIRROR_X       (false)
+#define LCD_MIRROR_X       (true)
 #define LCD_MIRROR_Y       (false)
 #endif
 
@@ -45,5 +45,5 @@
 #define TOUCH_RST      (gpio_num_t) GPIO_NUM_NC
 #define TOUCH_IRQ      (gpio_num_t) GPIO_NUM_NC /* GPIO_NUM_36, XPT driver is working better (for me) without IRQ */
 
-#define TOUCH_MIRROR_X (true)
-#define TOUCH_MIRROR_Y (false)
+#define TOUCH_MIRROR_X (LCD_MIRROR_X)
+#define TOUCH_MIRROR_Y (LCD_MIRROR_Y)

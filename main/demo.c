@@ -17,8 +17,13 @@
 #include "lcd.h"
 #include "touch.h"
 
+#include "lv_demos.h"
+
+// #define LV_DEMO_RUN
+
 static const char *TAG="demo";
 
+#ifndef LV_DEMO_RUN
 lv_obj_t *lbl_counter;
 
 void ui_event_Screen(lv_event_t *e)
@@ -78,6 +83,33 @@ static esp_err_t app_lvgl_main(void)
 }
 
 
+static char buf[16];
+static uint16_t n = 0;
+static void app_lvgl_loop_counter(void)
+{
+    sprintf(buf, "%04d", n++);
+    if (lvgl_port_lock(0))
+    {
+        lv_label_set_text(lbl_counter, buf);
+
+        lvgl_port_unlock();
+    }
+}
+#else
+
+static esp_err_t app_lvgl_demo(void)
+{
+    lvgl_port_lock(0);
+
+    lv_demo_stress();
+    // lv_demo_music();
+
+    lvgl_port_unlock();
+
+    return ESP_OK;
+}
+#endif
+
 void app_main(void)
 {
 esp_lcd_panel_io_handle_t lcd_io;
@@ -85,8 +117,6 @@ esp_lcd_panel_handle_t lcd_panel;
 esp_lcd_touch_handle_t tp;
 lvgl_port_touch_cfg_t touch_cfg;
 lv_display_t *lvgl_display = NULL;
-char buf[16];
-uint16_t n = 0;
 
     ESP_ERROR_CHECK(lcd_display_brightness_init());
 
@@ -104,19 +134,19 @@ uint16_t n = 0;
     lvgl_port_add_touch(&touch_cfg);
 
     ESP_ERROR_CHECK(lcd_display_brightness_set(75));
-    ESP_ERROR_CHECK(lcd_display_rotate(lvgl_display, LV_DISPLAY_ROTATION_90));
+    ESP_ERROR_CHECK(lcd_display_rotate(lvgl_display, LV_DISPLAY_ROTATION_270));
+
+#ifdef LV_DEMO_RUN
+    ESP_ERROR_CHECK(app_lvgl_demo());
+#else
     ESP_ERROR_CHECK(app_lvgl_main());
+#endif
 
     while(42)
     {
-        sprintf(buf, "%04d", n++);
-
-        if (lvgl_port_lock(0))
-        {
-            lv_label_set_text(lbl_counter, buf);
-
-            lvgl_port_unlock();
-        }
+#ifndef LV_DEMO_RUN
+        app_lvgl_loop_counter();
+#endif
 
         vTaskDelay(125 / portTICK_PERIOD_MS);
     }
